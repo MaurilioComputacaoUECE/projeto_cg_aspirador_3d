@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <title>Simulador Aspirador 3D</title>
+    <style>
+        * { box-sizing: border-box; }
+        body {
+            margin: 0;
+            background: #0f1117;
+            font-family: 'Segoe UI', sans-serif;
+            color: #e8e8e8;
+            min-height: 100vh;
+        }
+        #app {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+            padding: 24px;
+        }
+        h1 { margin: 0 0 8px; font-size: 1.8rem; color: #fff; }
+        .subtitle { color: #888; margin-bottom: 24px; font-size: 0.95rem; }
+
+        #menu-panel {
+            width: 100%;
+            max-width: 720px;
+            background: #1a1d27;
+            border-radius: 12px;
+            padding: 28px;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.4);
+        }
+        #menu-panel.hidden { display: none; }
+
+        .menu-screen { display: none; }
+        .menu-screen.active { display: block; }
+
+        .btn {
+            display: block;
+            width: 100%;
+            padding: 14px 20px;
+            margin: 10px 0;
+            border: none;
+            border-radius: 8px;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: background 0.15s;
+        }
+        .btn-primary { background: #3b6fd9; color: #fff; }
+        .btn-primary:hover { background: #4a7ee8; }
+        .btn-secondary { background: #2a3142; color: #ddd; }
+        .btn-secondary:hover { background: #353d52; }
+        .btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+        .form-group { margin: 16px 0; }
+        .form-group label { display: block; margin-bottom: 6px; color: #aaa; font-size: 0.9rem; }
+        .form-group input, .form-group select {
+            width: 100%;
+            padding: 10px 12px;
+            border-radius: 6px;
+            border: 1px solid #333;
+            background: #12151c;
+            color: #eee;
+            font-size: 1rem;
+        }
+        .form-row { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; }
+
+        #stats-panel {
+            margin-top: 28px;
+            padding-top: 24px;
+            border-top: 1px solid #2a3142;
+        }
+        #stats-panel h3 { margin: 0 0 12px; font-size: 1.1rem; }
+        #stats-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.9rem;
+        }
+        #stats-table th, #stats-table td {
+            padding: 8px 10px;
+            text-align: left;
+            border-bottom: 1px solid #2a3142;
+        }
+        #stats-table th { color: #888; font-weight: 600; }
+
+        #batch-progress { margin-top: 12px; color: #8af; min-height: 1.2em; }
+        #batch-result { margin-top: 12px; font-size: 0.9rem; color: #ccc; }
+        #batch-result ul { margin: 8px 0; padding-left: 20px; }
+
+        #glcanvas1 {
+            display: block;
+            border-radius: 8px;
+            cursor: crosshair;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.5);
+        }
+        #glcanvas1.hidden { display: none; }
+
+        #hud {
+            position: fixed;
+            top: 16px;
+            left: 16px;
+            background: rgba(0,0,0,0.75);
+            padding: 12px 16px;
+            border-radius: 8px;
+            font-size: 14px;
+            line-height: 1.6;
+            pointer-events: none;
+            z-index: 10;
+        }
+        #hud.hidden { display: none; }
+    </style>
+</head>
+<body>
+
+<div id="app">
+    <h1>Simulador Aspirador 3D</h1>
+    <p class="subtitle">Computacao Grafica — WebGL + agentes inteligentes</p>
+
+    <div id="menu-panel">
+        <!-- MENU PRINCIPAL -->
+        <div id="menu-main" class="menu-screen active">
+            <p style="color:#aaa;margin-bottom:20px">
+                Escolha o modo de simulacao. As estatisticas acumuladas aparecem abaixo.
+            </p>
+            <button id="btn-visual" class="btn btn-primary">Simulacao Grafica (3D)</button>
+            <button id="btn-lote" class="btn btn-secondary">Simulacao em Lote</button>
+        </div>
+
+        <!-- CONFIG VISUAL -->
+        <div id="menu-visual" class="menu-screen">
+            <h2 style="margin-top:0">Simulacao Grafica</h2>
+            <p style="color:#888;font-size:0.9rem">Assista o aspirador limpar a sala em 3D.</p>
+
+            <div class="form-group">
+                <label for="input-tamanho">Tamanho da sala (grade)</label>
+                <input type="number" id="input-tamanho" value="8" min="5" max="12">
+            </div>
+            <div class="form-group">
+                <label for="visual-agente">Tipo de agente</label>
+                <select id="visual-agente">
+                    <option value="reativo">Reativo — reage ao que ve</option>
+                    <option value="modelo">Modelo — lembra onde ja passou</option>
+                    <option value="onisciente">Onisciente — conhece o mapa</option>
+                </select>
+            </div>
+            <button id="btn-start-visual" class="btn btn-primary">Iniciar simulacao 3D</button>
+            <button class="btn btn-secondary btn-back">Voltar</button>
+        </div>
+
+        <!-- CONFIG LOTE -->
+        <div id="menu-lote" class="menu-screen">
+            <h2 style="margin-top:0">Simulacao em Lote</h2>
+            <p style="color:#888;font-size:0.9rem">Defina quantas vezes rodar cada tipo de agente.</p>
+
+            <div class="form-group">
+                <label for="input-tamanho-lote">Tamanho da sala</label>
+                <input type="number" id="input-tamanho-lote" value="8" min="5" max="12"
+                       onchange="document.getElementById('input-tamanho').value=this.value">
+            </div>
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="lote-reativo">Reativo</label>
+                    <input type="number" id="lote-reativo" value="30" min="0" max="500">
+                </div>
+                <div class="form-group">
+                    <label for="lote-modelo">Modelo</label>
+                    <input type="number" id="lote-modelo" value="30" min="0" max="500">
+                </div>
+                <div class="form-group">
+                    <label for="lote-onisciente">Onisciente</label>
+                    <input type="number" id="lote-onisciente" value="30" min="0" max="500">
+                </div>
+            </div>
+            <button id="btn-run-batch" class="btn btn-primary">Executar lote</button>
+            <button class="btn btn-secondary btn-back">Voltar</button>
+            <div id="batch-progress"></div>
+            <div id="batch-result"></div>
+        </div>
+
+        <!-- ESTATISTICAS -->
+        <div id="stats-panel">
+            <h3>Estatisticas acumuladas</h3>
+            <table id="stats-table"></table>
+            <p style="color:#666;font-size:0.8rem;margin-top:8px">
+                Atualizadas a cada simulacao (grafica ou lote). Salvas no navegador.
+            </p>
+        </div>
+    </div>
+
+    <canvas id="glcanvas1" class="hidden" width="1024" height="768"></canvas>
+    <div id="hud" class="hidden"></div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/mathjs/11.8.0/math.min.js"></script>
+
+<script id="vertex-shader" type="notjs">
+attribute vec3 position;
+attribute vec3 normal;
+attribute vec2 texCoord;
+uniform mat4 model;
+uniform mat4 view;
+uniform mat4 projection;
+varying vec3 FragPos;
+varying vec3 Normal;
+varying vec2 TexCoord;
+void main() {
+    FragPos = vec3(model * vec4(position, 1.0));
+    Normal = mat3(model) * normal;
+    TexCoord = texCoord;
+    gl_Position = projection * view * model * vec4(position, 1.0);
+}
+</script>
+
+<script id="frag-shader" type="notjs">
+precision highp float;
+varying vec3 FragPos;
+varying vec3 Normal;
+varying vec2 TexCoord;
+uniform vec3 uLightPos;
+uniform vec3 uLightColor;
+uniform vec3 uViewPos;
+uniform vec3 uColor;
+uniform sampler2D uTexture;
+uniform bool uUseTexture;
+void main() {
+    float ambientStrength = 0.25;
+    vec3 ambient = ambientStrength * uLightColor;
+    vec3 norm = normalize(Normal);
+    vec3 lightDir = normalize(uLightPos - FragPos);
+    float diff = max(dot(norm, lightDir), 0.0);
+    vec3 diffuse = diff * uLightColor;
+    float specularStrength = 0.5;
+    vec3 viewDir = normalize(uViewPos - FragPos);
+    vec3 reflectDir = reflect(-lightDir, norm);
+    float spec = pow(max(dot(viewDir, reflectDir), 0.0), 32.0);
+    vec3 specular = specularStrength * spec * uLightColor;
+    vec3 baseColor = uUseTexture ? texture2D(uTexture, TexCoord).rgb : uColor;
+    gl_FragColor = vec4((ambient + diffuse + specular) * baseColor, 1.0);
+}
+</script>
+
+<script src="js/core/WebGLContext.js"></script>
+<script src="js/core/Shader.js"></script>
+<script src="js/core/Buffer.js"></script>
+<script src="js/core/Mesh.js"></script>
+<script src="js/core/Texture.js"></script>
+<script src="js/core/Renderer.js"></script>
+<script src="js/core/Camera.js"></script>
+<script src="js/core/Transform.js"></script>
+<script src="js/core/Light.js"></script>
+<script src="js/core/Scene.js"></script>
+<script src="js/core/Cube.js"></script>
+<script src="js/simulacao/Obstaculo.js"></script>
+<script src="js/simulacao/AgenteBase.js"></script>
+<script src="js/simulacao/AgenteReativo.js"></script>
+<script src="js/simulacao/AgenteModelo.js"></script>
+<script src="js/simulacao/AgenteOnisciente.js"></script>
+<script src="js/simulacao/mundo.js"></script>
+<script src="js/simulacao/simulador.js"></script>
+<script src="js/app/StatsStore.js"></script>
+<script src="js/app/AspiradorScene3D.js"></script>
+<script src="js/app/AppController.js"></script>
+<script src="js/main.js"></script>
+</body>
+</html>
