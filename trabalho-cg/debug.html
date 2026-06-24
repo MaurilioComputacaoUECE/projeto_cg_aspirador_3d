@@ -1,0 +1,422 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <title>Debug - Agente Modelo</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            background: #1a1d27;
+            font-family: 'Courier New', monospace;
+            color: #e8e8e8;
+            padding: 20px;
+        }
+        h1 { color: #fff; font-size: 1.3rem; margin-bottom: 16px; }
+        .container {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+            max-width: 1200px;
+        }
+        .panel {
+            background: #0f1117;
+            border-radius: 6px;
+            padding: 12px;
+            border: 1px solid #2a3142;
+        }
+        .panel h2 {
+            color: #8af;
+            font-size: 1rem;
+            margin-bottom: 8px;
+            border-bottom: 1px solid #2a3142;
+            padding-bottom: 6px;
+        }
+        #grade {
+            font-size: 16px;
+            line-height: 1.2;
+            white-space: pre;
+            color: #ccc;
+            background: #000;
+            padding: 8px;
+            border-radius: 4px;
+        }
+        #info { font-size: 13px; line-height: 1.5; }
+        #info div { margin: 3px 0; }
+        .label { color: #888; }
+        .value { color: #8af; font-weight: bold; }
+        #funcao-chamada {
+            background: #2a3142;
+            padding: 8px;
+            border-radius: 4px;
+            margin: 8px 0;
+            font-size: 14px;
+            color: #ff8;
+            font-weight: bold;
+        }
+        #historico {
+            max-height: 300px;
+            overflow-y: auto;
+            font-size: 11px;
+            line-height: 1.4;
+            background: #000;
+            padding: 8px;
+            border-radius: 4px;
+        }
+        #historico div { margin: 2px 0; }
+        .acao { color: #ff8; }
+        .preso { color: #f88; font-weight: bold; }
+        button {
+            background: #3b6fd9;
+            color: #fff;
+            border: none;
+            padding: 8px 12px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 13px;
+            margin: 4px;
+        }
+        button:hover { background: #4a7ee8; }
+        .stats {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 6px;
+            margin: 8px 0;
+        }
+        .stat-box {
+            background: #1a1d27;
+            padding: 6px;
+            border-radius: 4px;
+            text-align: center;
+        }
+        .stat-box .value { font-size: 1.2rem; }
+        .stat-box .label { font-size: 0.7rem; color: #888; }
+    </style>
+</head>
+<body>
+    <h1>🔍 Debug - Agente Modelo</h1>
+    
+    <div class="container">
+        <div class="panel">
+            <h2>Mundo (Grade 8x8)</h2>
+            <div id="grade"></div>
+            
+            <div class="stats">
+                <div class="stat-box">
+                    <div class="value" id="stat-passos">0</div>
+                    <div class="label">Passos</div>
+                </div>
+                <div class="stat-box">
+                    <div class="value" id="stat-sujeira">0</div>
+                    <div class="label">Sujeira</div>
+                </div>
+                <div class="stat-box">
+                    <div class="value" id="stat-vezesParado">0</div>
+                    <div class="label">Vezes Parado</div>
+                </div>
+                <div class="stat-box">
+                    <div class="value" id="stat-direcao">↑</div>
+                    <div class="label">Direção</div>
+                </div>
+            </div>
+            
+            <button id="btn-passo">▶ Passo</button>
+            <button id="btn-auto">⏩ Auto</button>
+            <button id="btn-reset">🔄 Reset</button>
+        </div>
+        
+        <div class="panel">
+            <h2>Agente</h2>
+            <div id="info">
+                <div><span class="label">Posição:</span> <span class="value" id="info-pos">-</span></div>
+                <div><span class="label">Direção:</span> <span class="value" id="info-dir">-</span></div>
+                <div><span class="label">Frente:</span> <span class="value" id="info-frente">-</span></div>
+                <div><span class="label">Frente Livre:</span> <span class="value" id="info-frenteLivre">-</span></div>
+                <div><span class="label">Tem Sujeira:</span> <span class="value" id="info-sujeira">-</span></div>
+                <div><span class="label">Visitados:</span> <span class="value" id="info-visitados">0</span></div>
+                <div id="funcao-chamada">Função: -</div>
+            </div>
+            
+            <h2 style="margin-top: 12px;">Histórico</h2>
+            <div id="historico"></div>
+        </div>
+    </div>
+
+    <script src="../simulacao/AgenteBase.js"></script>
+    <script src="../simulacao/AgenteModelo.js"></script>
+    <script>
+        class MundoAspirador {
+            constructor(tamanho = 8) {
+                this.tamanho = tamanho;
+                this.passos = 0;
+                this.agente = { x: 4, y: 4, orientacao: 0 };
+                this.sujeira = [];
+                this.obstaculos = [];
+                this.totalSujeira = 0;
+                this.pontuacao = 0;
+                this.sujeirasLimpass = 0;
+                this.inicializar();
+            }
+
+            inicializar() {
+                this.passos = 0;
+                this.pontuacao = 0;
+                this.sujeirasLimpass = 0;
+                this.agente.x = 4;
+                this.agente.y = 4;
+                this.agente.orientacao = 0;
+                this.sujeira = [];
+                this.obstaculos = [];
+
+                const posicoes = [
+                    [0, 0, 'cama'], [1, 0, 'cama'], [3, 0, 'abajur'],
+                    [3, 1, 'cadeira'], [6, 7, 'comoda'], [7, 7, 'lixeira']
+                ];
+
+                for (const [x, y, tipo] of posicoes) {
+                    if (x === this.agente.x && y === this.agente.y) continue;
+                    this.obstaculos.push(new Obstaculo(x, y, tipo));
+                }
+
+                const numSujeira = Math.floor(this.tamanho * this.tamanho * 0.2);
+                let tentativas = 0;
+                while (this.sujeira.length < numSujeira && tentativas < 1000) {
+                    const x = Math.floor(Math.random() * this.tamanho);
+                    const y = Math.floor(Math.random() * this.tamanho);
+                    if (x === this.agente.x && y === this.agente.y) continue;
+                    if (this.isObstaculo(x, y)) continue;
+                    if (this.sujeira.some(s => s.x === x && s.y === y)) continue;
+                    this.sujeira.push({ x, y });
+                    tentativas++;
+                }
+                this.totalSujeira = this.sujeira.length;
+            }
+
+            isObstaculo(x, y) {
+                return this.obstaculos.some(o => o.colideCom(x, y));
+            }
+
+            getPercepcoes() {
+                const x = this.agente.x, y = this.agente.y;
+                const dx = [0, 1, 0, -1];
+                const dy = [-1, 0, 1, 0];
+                const dir = this.agente.orientacao;
+                const fx = x + dx[dir], fy = y + dy[dir];
+
+                return {
+                    temSujeira: this.sujeira.some(s => s.x === x && s.y === y),
+                    frenteLivre: this.isDentro(fx, fy) && !this.isObstaculo(fx, fy)
+                };
+            }
+
+            isDentro(x, y) {
+                return x >= 0 && x < this.tamanho && y >= 0 && y < this.tamanho;
+            }
+
+            aspirar() {
+                const idx = this.sujeira.findIndex(s => s.x === this.agente.x && s.y === this.agente.y);
+                if (idx !== -1) {
+                    this.sujeira.splice(idx, 1);
+                    this.sujeirasLimpass++;
+                    this.pontuacao += 10;
+                    return true;
+                }
+                return false;
+            }
+
+            andarFrente() {
+                const dx = [0, 1, 0, -1], dy = [-1, 0, 1, 0];
+                const dir = this.agente.orientacao;
+                const nx = this.agente.x + dx[dir], ny = this.agente.y + dy[dir];
+
+                if (this.isDentro(nx, ny) && !this.isObstaculo(nx, ny)) {
+                    this.agente.x = nx;
+                    this.agente.y = ny;
+                    this.passos++;
+                    this.pontuacao -= 1;
+                    return true;
+                }
+                this.pontuacao -= 5;
+                return false;
+            }
+
+            virarDireita() {
+                this.agente.orientacao = (this.agente.orientacao + 1) % 4;
+                this.pontuacao -= 1;
+            }
+
+            virarEsquerda() {
+                this.agente.orientacao = (this.agente.orientacao + 3) % 4;
+                this.pontuacao -= 1;
+            }
+
+            getEstado() {
+                return {
+                    x: this.agente.x, y: this.agente.y,
+                    orientacao: this.agente.orientacao,
+                    tamanho: this.tamanho,
+                    sujeiraRestante: this.sujeira.length,
+                    totalSujeira: this.totalSujeira,
+                    passos: this.passos,
+                    pontuacao: this.pontuacao
+                };
+            }
+
+            getGrade() {
+                const grade = [];
+                for (let y = 0; y < this.tamanho; y++) {
+                    const linha = [];
+                    for (let x = 0; x < this.tamanho; x++) {
+                        let celula = '·';
+                        if (this.isObstaculo(x, y)) celula = '🧱';
+                        else if (this.sujeira.some(s => s.x === x && s.y === y)) celula = '🟫';
+                        else if (this.agente.x === x && this.agente.y === y) celula = '🧹';
+                        linha.push(celula);
+                    }
+                    grade.push(linha);
+                }
+                return grade;
+            }
+        }
+
+        class Obstaculo {
+            constructor(x, y, tipo) {
+                this.x = x; this.y = y; this.tipo = tipo;
+            }
+            colideCom(x, y) { return this.x === x && this.y === y; }
+        }
+
+        // ============================================
+        // DEBUG
+        // ============================================
+        
+        let mundo = null;
+        let agente = null;
+        let historico = [];
+        let autoInterval = null;
+
+        function inicializar() {
+            mundo = new MundoAspirador(8);
+            agente = new AgenteModelo();
+            agente.reset();
+            historico = [];
+            atualizarDisplay();
+        }
+
+        function executarPasso() {
+            const percepcoes = mundo.getPercepcoes();
+            const estado = mundo.getEstado();
+            const acao = agente.executar(percepcoes, estado);
+
+            // Identifica qual função foi chamada
+            let funcaoChamada = 'executar()';
+            if (acao === 'ASPIRAR') funcaoChamada = 'aspirar()';
+            else if (acao === 'ANDAR_FRENTE') funcaoChamada = 'andarFrente()';
+            else if (acao === 'VIRAR_DIREITA') funcaoChamada = 'virarDireita()';
+            else if (acao === 'VIRAR_ESQUERDA') funcaoChamada = 'virarEsquerda()';
+
+            const log = {
+                passo: mundo.passos + 1,
+                posicao: `(${estado.x},${estado.y})`,
+                direcao: estado.orientacao,
+                acao: acao,
+                funcao: funcaoChamada,
+                vezesParado: agente.vezesParado,
+                frenteLivre: percepcoes.frenteLivre,
+                temSujeira: percepcoes.temSujeira,
+                visitados: agente.visitados.size
+            };
+            historico.push(log);
+
+            switch (acao) {
+                case 'ASPIRAR': mundo.aspirar(); break;
+                case 'ANDAR_FRENTE': mundo.andarFrente(); break;
+                case 'ANDAR_DIREITA':
+                    mundo.virarDireita();
+                    mundo.andarFrente();
+                    break;
+                case 'ANDAR_ESQUERDA':
+                    mundo.virarEsquerda();
+                    mundo.andarFrente();
+                    break;
+                case 'VIRAR_DIREITA': mundo.virarDireita(); break;
+                case 'VIRAR_ESQUERDA': mundo.virarEsquerda(); break;
+            }
+
+            atualizarDisplay();
+        }
+
+        function atualizarDisplay() {
+            const estado = mundo.getEstado();
+            const percepcoes = mundo.getPercepcoes();
+            const grade = mundo.getGrade();
+            const dirSymbols = ['↑', '→', '↓', '←'];
+
+            // Grade com direção e visitados
+            const gradeComDirecao = grade.map((linha, y) =>
+                linha.map((celula, x) => {
+                    if (celula === '🧹') return dirSymbols[estado.orientacao];
+                    if (agente.jaVisitou(x, y) && celula === '·') return '○';
+                    return celula;
+                }).join(' ')
+            ).join('\n');
+            document.getElementById('grade').textContent = gradeComDirecao;
+
+            // Stats
+            document.getElementById('stat-passos').textContent = mundo.passos;
+            document.getElementById('stat-sujeira').textContent = mundo.sujeira.length;
+            document.getElementById('stat-vezesParado').textContent = agente.vezesParado;
+            document.getElementById('stat-direcao').textContent = dirSymbols[estado.orientacao];
+
+            // Info
+            document.getElementById('info-pos').textContent = `(${estado.x}, ${estado.y})`;
+            document.getElementById('info-dir').textContent = dirSymbols[estado.orientacao];
+            const frente = agente.getFrente(estado);
+            document.getElementById('info-frente').textContent = `(${frente.x}, ${frente.y})`;
+            document.getElementById('info-frenteLivre').textContent = percepcoes.frenteLivre ? 'Sim' : 'Não';
+            document.getElementById('info-sujeira').textContent = percepcoes.temSujeira ? 'Sim' : 'Não';
+            document.getElementById('info-visitados').textContent = agente.visitados.size;
+
+            // Função chamada
+            if (historico.length > 0) {
+                document.getElementById('funcao-chamada').textContent = 
+                    `Função: ${historico[historico.length - 1].funcao}`;
+            }
+
+            // Histórico
+            const histDiv = document.getElementById('historico');
+            histDiv.innerHTML = historico.map(h => {
+                const isPreso = h.vezesParado > 5;
+                return `<div class="${isPreso ? 'preso' : ''}">
+                    Passo ${h.passo}: ${h.acao} (${h.funcao}) @ ${h.posicao} ${isPreso ? '⚠️' : ''}
+                </div>`;
+            }).join('');
+            histDiv.scrollTop = histDiv.scrollHeight;
+        }
+
+        // Event listeners
+        document.getElementById('btn-passo').addEventListener('click', executarPasso);
+        
+        document.getElementById('btn-auto').addEventListener('click', (e) => {
+            if (autoInterval) {
+                clearInterval(autoInterval);
+                autoInterval = null;
+                e.target.textContent = '⏩ Auto';
+            } else {
+                autoInterval = setInterval(executarPasso, 100);
+                e.target.textContent = '⏸ Pausar';
+            }
+        });
+
+        document.getElementById('btn-reset').addEventListener('click', () => {
+            if (autoInterval) {
+                clearInterval(autoInterval);
+                autoInterval = null;
+                document.getElementById('btn-auto').textContent = '⏩ Auto';
+            }
+            inicializar();
+        });
+
+        inicializar();
+    </script>
+</body>
+</html>
