@@ -45,7 +45,7 @@ class Renderer {
     
     render(scene, camera, program) {
         if (!program) {
-            console.error("❌ Renderer: programa inválido!");
+            console.error(" Renderer: programa inválido!");
             return;
         }
         

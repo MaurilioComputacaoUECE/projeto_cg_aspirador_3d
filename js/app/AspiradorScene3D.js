@@ -16,7 +16,7 @@ class AspiradorScene3D {
         this.setupShaders();
 
         this.camera = new Camera(60, this.canvas.width / this.canvas.height, 0.1, 100);
-        this.modoCamera = 'primeira';
+        this.modoCamera = 'perseguicao';
         this.camera.setPosition(0, this.tamanho * 0.9, this.tamanho * 0.8);
         this.camera.setTarget(0, 0, 0);
         this.camera.rotation = [-0.3, 0, 0];
@@ -324,80 +324,80 @@ class AspiradorScene3D {
         assento.setColor(0.6, 0.4, 0.2, 1);
         this.addObjeto(assento);
 
-        // Encosto
+        // Encosto (altura reduzida)
         const encosto = new Cube(this.gl, program);
-        encosto.transform.setPosition(x, y + 0.65, z + 0.15);
-        encosto.transform.setScale(0.35, 0.35, 0.05);
+        encosto.transform.setPosition(x, y + 0.55, z + 0.15); // ← mais baixo
+        encosto.transform.setScale(0.35, 0.35, 0.05); // ← altura normal
         encosto.setColor(0.5, 0.35, 0.15, 1);
         this.addObjeto(encosto);
 
-        // 4 Pernas
+        // 4 Pernas (exageradas)
         const pernas = [
-            [x - 0.12, y + 0.15, z - 0.12],
-            [x + 0.12, y + 0.15, z - 0.12],
-            [x - 0.12, y + 0.15, z + 0.12],
-            [x + 0.12, y + 0.15, z + 0.12]
+            [x - 0.12, y + 0.05, z - 0.12],
+            [x + 0.12, y + 0.05, z - 0.12],
+            [x - 0.12, y + 0.05, z + 0.12],
+            [x + 0.12, y + 0.05, z + 0.12]
         ];
         for (const pos of pernas) {
             const perna = new Cube(this.gl, program);
             perna.transform.setPosition(pos[0], pos[1], pos[2]);
-            perna.transform.setScale(0.04, 0.3, 0.04);
+            perna.transform.setScale(0.06, 0.60, 0.06);
             perna.setColor(0.4, 0.25, 0.1, 1);
             this.addObjeto(perna);
         }
     }
 
     criarMesaAbajur(program, x, y, z) {
-        // Tampo da mesa
-        const tampo = new Cube(this.gl, program);
-        tampo.transform.setPosition(x, y + 0.4, z);
-        tampo.transform.setScale(0.5, 0.04, 0.4);
-        tampo.setColor(0.5, 0.4, 0.25, 1);
-        this.addObjeto(tampo);
+    // Tampo da mesa
+    const tampo = new Cube(this.gl, program);
+    tampo.transform.setPosition(x, y + 0.4, z);
+    tampo.transform.setScale(0.5, 0.04, 0.4);
+    tampo.setColor(0.5, 0.4, 0.25, 1);
+    this.addObjeto(tampo);
 
-        // 4 Pernas
-        const pernas = [
-            [x - 0.2, y + 0.15, z - 0.15],
-            [x + 0.2, y + 0.15, z - 0.15],
-            [x - 0.2, y + 0.15, z + 0.15],
-            [x + 0.2, y + 0.15, z + 0.15]
-        ];
-        for (const pos of pernas) {
-            const perna = new Cube(this.gl, program);
-            perna.transform.setPosition(pos[0], pos[1], pos[2]);
-            perna.transform.setScale(0.04, 0.3, 0.04);
-            perna.setColor(0.3, 0.2, 0.1, 1);
-            this.addObjeto(perna);
-        }
-
-        // Base do abajur
-        const base = new Cube(this.gl, program);
-        base.transform.setPosition(x + 0.15, y + 0.45, z - 0.1);
-        base.transform.setScale(0.15, 0.04, 0.15);
-        base.setColor(0.2, 0.15, 0.1, 1);
-        this.addObjeto(base);
-
-        // Haste
-        const haste = new Cube(this.gl, program);
-        haste.transform.setPosition(x + 0.15, y + 0.6, z - 0.1);
-        haste.transform.setScale(0.02, 0.15, 0.02);
-        haste.setColor(0.6, 0.5, 0.4, 1);
-        this.addObjeto(haste);
-
-        // Cúpula
-        const cupula = new Cube(this.gl, program);
-        cupula.transform.setPosition(x + 0.15, y + 0.7, z - 0.1);
-        cupula.transform.setScale(0.2, 0.06, 0.2);
-        cupula.setColor(0.9, 0.8, 0.6, 1);
-        this.addObjeto(cupula);
-
-        // Luz
-        const luz = new Cube(this.gl, program);
-        luz.transform.setPosition(x + 0.15, y + 0.67, z - 0.1);
-        luz.transform.setScale(0.08, 0.02, 0.08);
-        luz.setColor(1.0, 0.9, 0.5, 0.6);
-        this.addObjeto(luz);
+    // 4 Pernas (altura = 1.0 para ter certeza que passa)
+    const pernas = [
+        [x - 0.2, y, z - 0.15],
+        [x + 0.2, y, z - 0.15],
+        [x - 0.2, y, z + 0.15],
+        [x + 0.2, y, z + 0.15]
+    ];
+    for (const pos of pernas) {
+        const perna = new Cube(this.gl, program);
+        perna.transform.setPosition(pos[0], pos[1], pos[2]);
+        perna.transform.setScale(0.06, 0.80, 0.06); 
+        perna.setColor(0.5, 0.4, 0.25, 1); // VERMELHO
+        this.addObjeto(perna);
     }
+
+    // Base do abajur
+    const base = new Cube(this.gl, program);
+    base.transform.setPosition(x + 0.15, y + 0.45, z - 0.1);
+    base.transform.setScale(0.15, 0.04, 0.15);
+    base.setColor(0.2, 0.15, 0.1, 1);
+    this.addObjeto(base);
+
+    // Haste
+    const haste = new Cube(this.gl, program);
+    haste.transform.setPosition(x + 0.15, y + 0.6, z - 0.1);
+    haste.transform.setScale(0.02, 0.15, 0.02);
+    haste.setColor(0.6, 0.5, 0.4, 1);
+    this.addObjeto(haste);
+
+    // Cúpula
+    const cupula = new Cube(this.gl, program);
+    cupula.transform.setPosition(x + 0.15, y + 0.7, z - 0.1);
+    cupula.transform.setScale(0.2, 0.06, 0.2);
+    cupula.setColor(0.9, 0.8, 0.6, 1);
+    this.addObjeto(cupula);
+
+    // Luz
+    const luz = new Cube(this.gl, program);
+    luz.transform.setPosition(x + 0.15, y + 0.67, z - 0.1);
+    luz.transform.setScale(0.08, 0.02, 0.08);
+    luz.setColor(1.0, 0.9, 0.5, 0.6);
+    this.addObjeto(luz);
+}
 
     criarCama(program, x, y, z) {
         // COLCHÃO
@@ -537,8 +537,16 @@ class AspiradorScene3D {
         document.addEventListener('keydown', (e) => {
             this.keys[e.key] = true;
             if (e.key === 'Escape') this.parar(true);
-            if (e.key === 'c' || e.key === 'C') {
-                const novo = this.modoCamera === 'primeira' ? 'topo' : 'primeira';
+        if (e.key === 'c' || e.key === 'C') {
+                // Cicla entre 3 modos: perseguição -> primeira pessoa -> topo
+                let novo;
+                if (this.modoCamera === 'perseguicao') {
+                    novo = 'primeira';
+                } else if (this.modoCamera === 'primeira') {
+                    novo = 'topo';
+                } else {
+                    novo = 'perseguicao';
+                }
                 this.trocarCamera(novo);
                 // Atualiza o HUD imediatamente
                 this.atualizarHUD({ terminou: false });
@@ -573,9 +581,7 @@ class AspiradorScene3D {
 
     parar(voltarMenu) {
         this.ativo = false;
-        if (document.pointerLockElement === this.canvas) {
-            document.exitPointerLock();
-        }
+        // Não chama exitPointerLock() - o browser já faz isso automaticamente quando ESC é pressionado
         if (voltarMenu && this.onFinish) {
             this.onFinish(this.resultadoFinal);
         }
@@ -594,32 +600,53 @@ class AspiradorScene3D {
     updateCamera(now) {
         this.time += 0.016;
 
-        if (this.modoCamera === 'primeira') {
+        if (this.modoCamera === 'perseguicao') {
             // ============================================
-            // CÂMERA EM PRIMEIRA PESSOA (SEGUE O ROBO)
+            // CÂMERA DE PERSEGUIÇÃO (ATRÁS E ACIMA)
             // ============================================
             const pos = this.gridParaMundo(
                 this.mundo.agente.x,
                 this.mundo.agente.y
             );
 
-            // Posiciona a câmera na altura dos olhos do robo
+            const alturaCamera = 1.5; // Altura elevada
+            const distanciaCamera = 2.0; // Distância atrás do robô
+            const orientacaoRad = this.mundo.agente.orientacao * Math.PI / 2;
+            
+            this.camera.position[0] = pos.x + Math.sin(orientacaoRad) * distanciaCamera;
+            this.camera.position[1] = alturaCamera;
+            this.camera.position[2] = pos.z + Math.cos(orientacaoRad) * distanciaCamera;
+
+            this.camera.rotation[1] = -orientacaoRad;
+            this.camera.rotation[0] = -0.4;
+            this.camera.target = [
+                pos.x,
+                0.15,
+                pos.z
+            ];
+
+        } else if (this.modoCamera === 'primeira') {
+            // ============================================
+            // CÂMERA EM PRIMEIRA PESSOA (SEM ASPIRADOR)
+            // ============================================
+            const pos = this.gridParaMundo(
+                this.mundo.agente.x,
+                this.mundo.agente.y
+            );
+
             this.camera.position[0] = pos.x;
             this.camera.position[1] = 0.6; // Altura dos olhos
             this.camera.position[2] = pos.z;
 
-            // A rotação horizontal segue a orientação do robo
-            // Mas o mouse pode ajustar
             const orientacaoRad = this.mundo.agente.orientacao * Math.PI / 2;
-            this.camera.rotation[1] = -orientacaoRad; // Sincroniza com o robo
+            this.camera.rotation[1] = -orientacaoRad;
 
-            // O target segue a direção que o robo está olhando
             this.camera.target = [
                 this.camera.position[0] - Math.sin(this.camera.rotation[1]) * Math.cos(this.camera.rotation[0]),
                 this.camera.position[1] + Math.sin(this.camera.rotation[0]),
                 this.camera.position[2] - Math.cos(this.camera.rotation[1]) * Math.cos(this.camera.rotation[0])
             ];
-
+            
         } else {
             // ============================================
             // VISÃO DE CIMA (TOPO)
@@ -677,13 +704,19 @@ class AspiradorScene3D {
 
     trocarCamera(modo) {
         this.modoCamera = modo;
+        
+        // Garante que o aspirador está visível ao sair do modo primeira pessoa
+        if (modo !== 'primeira' && this.aspirador) {
+            this.aspirador.forEach(obj => obj.visivel = true);
+        }
+        
         if (modo === 'topo') {
             // Visão de cima
             this.camera.setPosition(0, this.tamanho * 1.2, this.tamanho * 0.5);
             this.camera.setTarget(0, 0, 0);
             this.camera.rotation = [-1.0, 0, 0];
         } else {
-            // Primeira pessoa - posição será atualizada pelo updateCamera
+            // Primeira pessoa ou perseguição - posição será atualizada pelo updateCamera
             this.camera.setPosition(0, 0.6, 0);
             this.camera.setTarget(0, 0, -1);
             this.camera.rotation = [0, 0, 0];
@@ -772,7 +805,12 @@ class AspiradorScene3D {
         const m = this.simulador.mundo;
         const labels = { reativo: 'Reativo', modelo: 'Modelo', onisciente: 'Onisciente' };
         const tipo = labels[this.simulador.config.agenteTipo] || this.simulador.config.agenteTipo;
-        const modoLabel = this.modoCamera === 'primeira' ? '👁️ 1ª pessoa' : '🗺️ Visão topo';
+        const modoLabels = {
+            'perseguicao': '🎥 Perseguição',
+            'primeira': '👁️ 1ª pessoa (sem robô)',
+            'topo': '🗺️ Visão topo'
+        };
+        const modoLabel = modoLabels[this.modoCamera] || this.modoCamera;
 
         hud.innerHTML = `
             <strong>Agente ${tipo}</strong><br>
@@ -788,6 +826,18 @@ class AspiradorScene3D {
         this.renderer.clear();
 
         const gl = this.gl;
+        
+        // Gerencia visibilidade do aspirador
+        if (this.aspirador) {
+            if (this.modoCamera === 'primeira') {
+                // Oculta o aspirador na primeira pessoa
+                this.aspirador.forEach(obj => obj.visivel = false);
+            } else {
+                // Mostra o aspirador em outros modos
+                this.aspirador.forEach(obj => obj.visivel = true);
+            }
+        }
+        
         const lightPos = gl.getUniformLocation(this.program, 'uLightPos');
         const lightColor = gl.getUniformLocation(this.program, 'uLightColor');
         const viewPos = gl.getUniformLocation(this.program, 'uViewPos');
