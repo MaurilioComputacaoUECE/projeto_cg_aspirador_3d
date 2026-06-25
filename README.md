@@ -11,7 +11,7 @@ Simulador de aspirador de pó em ambiente 3D com **três tipos de agentes inteli
 - **Simulação em lote**: Execute múltiplas simulações para análise estatística
 - **Estatísticas acumuladas** de pontuação, taxa de sucesso e passos (salvas no navegador)
 
-## 🎯 Requisitos Atendidos
+## Requisitos Atendidos
 
 ### Funcionalidades Técnicas Obrigatórias
 
@@ -61,7 +61,7 @@ Execute múltiplas simulações de cada tipo de agente para análise estatístic
 - Visualize estatísticas completas ao final
 - Dados acumulados entre sessões (salvos no localStorage)
 
-## 🎨 Cenário 3D
+##  Cenário 3D
 
 A sala é composta por:
 
@@ -85,7 +85,7 @@ A sala é composta por:
   - Depósito de pó transparente
 - **Sujeira** representada por partículas aleatórias marrons
 
-## 🕹️ Controles
+## Controles
 
 ### Menu Principal
 - Clique nos botões para navegar entre modos
@@ -104,7 +104,7 @@ A sala é composta por:
 
 > **Dica**: Clique na tela do WebGL para ativar o controle do mouse (pointer lock).
 
-## 🛠️ Tecnologias Utilizadas
+## Tecnologias Utilizadas
 
 - **WebGL 1.0** - API gráfica para renderização 3D
 - **JavaScript ES6** - Linguagem de programação
@@ -131,7 +131,7 @@ js/core/
 └── Cube.js           # Primitiva geométrica (cubo)
 ```
 
-## 📁 Estrutura do Projeto
+## Estrutura do Projeto
 
 ```
 trabalho-cg/
@@ -179,7 +179,7 @@ trabalho-cg/
 └── (outros arquivos)
 ```
 
-## 🚀 Como Executar
+## Como Executar
 
 ### Opção 1: Servidor Local (Recomendado)
 
@@ -197,7 +197,7 @@ Acesse no navegador: `http://localhost:8080`
 
 ### Opção 2: Extensão Live Server (VS Code)
 
-Se usar VS Code/Cursor com a extensão **Live Server**:
+Se usar VS Code com a extensão **Live Server**:
 
 1. Clique com botão direito em `index.html`
 2. Selecione **"Open with Live Server"**
@@ -273,7 +273,7 @@ Onde:
 - **Memória**: Mapa completo do ambiente
 - **Estratégia**: Planeja rota ótima para limpar toda a sujeira
 
-## 📊 Estatísticas
+## Estatísticas
 
 O sistema registra e acumula estatísticas entre sessões:
 
@@ -285,7 +285,7 @@ O sistema registra e acumula estatísticas entre sessões:
 
 Dados são persistidos no `localStorage` do navegador.
 
-## 🎯 Objetivos de Aprendizado
+##  Objetivos de Aprendizado
 
 Este projeto demonstra:
 
@@ -297,21 +297,12 @@ Este projeto demonstra:
 6. **Agentes inteligentes** com diferentes níveis de racionalidade
 7. **Arquitetura de motor gráfico** modular e extensível
 
-## 👥 Autores
+## Vídeo de Demonstração
+[Clique aqui para assistir](https://www.youtube.com/watch?v=rrZ1ND3pwwY)
+
+##  Autor
 
 Maurílio Salvaterra Cordeiro Neto
 
-## 📚 Referências
-
-- **WebGL Fundamentals**: https://webglfundamentals.org/
-- **Learn WebGL**: https://learnwebgl.brown37.net/
-- **The Book of Shaders**: https://thebookofshaders.com/
-- **Math.js Documentation**: https://mathjs.org/
-
-## 📝 Licença
-
-Trabalho acadêmico - Computação Gráfica
-
----
 
 **Nota**: Este projeto foi desenvolvido exclusivamente para fins educacionais, atendendo aos requisitos da disciplina de Computação Gráfica.
